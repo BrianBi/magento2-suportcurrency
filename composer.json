@@ -1,5 +1,5 @@
 {
-  "name": "yaoli/module-paypals",
+  "name": "yaoli/paypals",
   "description": "Yaoli Paypal Suport multiple Currency for Magento 2",
   "type": "magento2-module",
   "version": "1.0.0",
