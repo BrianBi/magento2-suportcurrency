@@ -5,4 +5,5 @@
     <preference for="Magento\Payment\Model\Cart" type="Yaoli\Paypals\Model\Payment\Cart" />
     <preference for="Magento\Paypal\Model\Express" type="Yaoli\Paypals\Model\Express" />
     <preference for="Magento\Paypal\Model\Ipn" type="Yaoli\Paypals\Model\Ipn" />
+    <preference for="Magento\Quote\Model\Quote\Address\Validator" type="Yaoli\Paypals\Model\Quote\Address\Validator" />
 </config>
