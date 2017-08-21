@@ -19,7 +19,7 @@ class Validator extends \Magento\Quote\Model\Quote\Address\Validator
             $country = $this->countryFactory->create();
             $country->load($countryId);
             if (!$country->getId() && $countryId != 'CN') {
-                $messages['invalid_country_code'] = 'Invalid country code';
+                $messages['invalid_country_code'] = 'Invalid country code' . $countryId;
             }
         }
 
