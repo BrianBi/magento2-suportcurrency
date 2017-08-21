@@ -3,7 +3,7 @@
 namespace Yaoli\Paypals\Model\Quote\Address;
 use Zend_Validate_Exception;
 
-class Validator extends Magento\Quote\Model\Quote\Address\Validator
+class Validator extends \Magento\Quote\Model\Quote\Address\Validator
 {
 	public function isValid($value)
     {
