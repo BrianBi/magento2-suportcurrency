@@ -41,4 +41,53 @@ class Express extends Magento\Paypal\Model\Ipn
         $amqp = RabbitMQ::create('ipn', $url);
         $result = $amqp->publish($_data);
     }
+
+    /**
+     * Process completed payment (either full or partial)
+     *
+     * @param bool $skipFraudDetection
+     * @return void
+     */
+    protected function _registerPaymentCapture($skipFraudDetection = false)
+    {
+        if ($this->getRequestData('transaction_entity') == 'auth') {
+            return;
+        }
+        $parentTransactionId = $this->getRequestData('parent_txn_id');
+        $this->_importPaymentInformation();
+        $payment = $this->_order->getPayment();
+        $payment->setTransactionId(
+            $this->getRequestData('txn_id')
+        );
+        $payment->setCurrencyCode(
+            $this->getRequestData('mc_currency')
+        );
+        $payment->setPreparedMessage(
+            $this->_createIpnComment('')
+        );
+        $payment->setParentTransactionId(
+            $parentTransactionId
+        );
+        $payment->setShouldCloseParentTransaction(
+            'Completed' === $this->getRequestData('auth_status')
+        );
+        $payment->setIsTransactionClosed(
+            0
+        );
+        $payment->registerCaptureNotification(
+            $this->getRequestData('mc_gross')
+        );
+        $this->_order->save();
+
+        // notify customer
+        $invoice = $payment->getCreatedInvoice();
+        if ($invoice && !$this->_order->getEmailSent()) {
+            $this->orderSender->send($this->_order);
+            $this->_order->addStatusHistoryComment(
+                __('You notified customer about invoice #%1.', $invoice->getIncrementId())
+            )->setIsCustomerNotified(
+                true
+            )->save();
+        }
+    }
 }
