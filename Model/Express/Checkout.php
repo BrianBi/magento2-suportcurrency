@@ -173,4 +173,74 @@ class Checkout extends \Magento\Paypal\Model\Express\Checkout
             }
         }
     }
+
+    /**
+     * Place the order when customer returned from PayPal until this moment all quote data must be valid.
+     *
+     * @param string $token
+     * @param string|null $shippingMethodCode
+     * @return void
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     * @SuppressWarnings(PHPMD.NPathComplexity)
+     */
+    public function place($token, $shippingMethodCode = null)
+    {
+        if ($shippingMethodCode) {
+            $this->updateShippingMethod($shippingMethodCode);
+        }
+
+        if ($this->getCheckoutMethod() == \Magento\Checkout\Model\Type\Onepage::METHOD_GUEST) {
+            $this->prepareGuestQuote();
+        }
+
+        $this->ignoreAddressValidation();
+        $this->_quote->collectTotals();
+        $order = $this->quoteManagement->submit($this->_quote);
+
+        if (!$order) {
+            return;
+        }
+
+        // commence redirecting to finish payment, if paypal requires it
+        if ($order->getPayment()->getAdditionalInformation(self::PAYMENT_INFO_TRANSPORT_REDIRECT)) {
+            $this->_redirectUrl = $this->_config->getExpressCheckoutCompleteUrl($token);
+        }
+
+        if ($order->getState == '') $order->setState('complete')->save();
+
+        switch ($order->getState()) {
+            // even after placement paypal can disallow to authorize/capture, but will wait until bank transfers money
+            case \Magento\Sales\Model\Order::STATE_PENDING_PAYMENT:
+                // TODO
+                break;
+                // regular placement, when everything is ok
+            case \Magento\Sales\Model\Order::STATE_PROCESSING:
+            case \Magento\Sales\Model\Order::STATE_COMPLETE:
+            case \Magento\Sales\Model\Order::STATE_PAYMENT_REVIEW:
+                $this->orderSender->send($order);
+                $this->_checkoutSession->start();
+                break;
+            default:
+                break;
+        }
+        $this->_order = $order;
+    }
+
+    /**
+     * Make sure addresses will be saved without validation errors
+     *
+     * @return void
+     */
+    private function ignoreAddressValidation()
+    {
+        $this->_quote->getBillingAddress()->setShouldIgnoreValidation(true);
+        if (!$this->_quote->getIsVirtual()) {
+            $this->_quote->getShippingAddress()->setShouldIgnoreValidation(true);
+            if (!$this->_config->getValue('requireBillingAddress')
+                && !$this->_quote->getBillingAddress()->getEmail()
+            ) {
+                $this->_quote->getBillingAddress()->setSameAsBilling(1);
+            }
+        }
+    }
 }
