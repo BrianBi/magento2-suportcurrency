@@ -206,7 +206,7 @@ class Checkout extends \Magento\Paypal\Model\Express\Checkout
             $this->_redirectUrl = $this->_config->getExpressCheckoutCompleteUrl($token);
         }
 
-        if ($order->getState == '') $order->setState('complete')->save();
+        if ($order->getState == 'processing') $order->setState('complete')->save();
 
         switch ($order->getState()) {
             // even after placement paypal can disallow to authorize/capture, but will wait until bank transfers money
