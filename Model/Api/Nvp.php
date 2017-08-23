@@ -65,7 +65,11 @@ class Nvp extends \Magento\Paypal\Model\Api\Nvp
         $this->_exportLineItems($request);
 
         $request['ITEMAMT'] = $request['AMT'];
-        $request['L_AMT0']  = $request['AMT'] / $request['L_QTY0'];
+
+        if (isset($request['L_AMT1'])) 
+            $request['L_AMT0'] = ($request['AMT'] + abs($request['L_AMT1'])) / $request['L_QTY0'];
+        else
+            $request['L_AMT0']  = $request['AMT'] / $request['L_QTY0'];
 
         // import/suppress shipping address, if any
         $options = $this->getShippingOptions();
@@ -104,7 +108,11 @@ class Nvp extends \Magento\Paypal\Model\Api\Nvp
         }
 
         $request['ITEMAMT'] = $request['AMT'];
-        $request['L_AMT0']  = $request['AMT'] / $request['L_QTY0'];
+        
+        if (isset($request['L_AMT1'])) 
+            $request['L_AMT0'] = ($request['AMT'] + abs($request['L_AMT1'])) / $request['L_QTY0'];
+        else
+            $request['L_AMT0']  = $request['AMT'] / $request['L_QTY0'];
 
         $response = $this->call(self::DO_EXPRESS_CHECKOUT_PAYMENT, $request);
         $this->_importFromResponse($this->_paymentInformationResponse, $response);

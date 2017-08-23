@@ -25,13 +25,13 @@ class Cart extends \Magento\Payment\Model\Cart
             $_data = array(
                     'name'   => $name,
                     'qty'    => $qty,
-                    'amount' => round($this->getDiscount(), 2)
+                    'amount' => (double)$this->getDiscount()
                 );
         } else {
             $_data = array(
                     'name'   => $name,
                     'qty'    => $qty,
-                    'amount' => round($this->CurrencyConverter($amount), 2)
+                    'amount' => (double)$this->CurrencyConverter($amount)
                 );
         }
         //$item = new \Magento\Framework\DataObject(['name' => $name, 'qty' => $qty, 'amount' => (double)$amount]);
