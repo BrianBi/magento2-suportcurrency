@@ -37,9 +37,8 @@ class Nvp extends \Magento\Paypal\Model\Api\Nvp
      * Get Paypal Pay Total
      * @return float
      */
-    public function getPayTotal()
+    public function getPayTotal($price)
     {
-        var_dump($this->_cart->getCartAllItems());die;
         $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $storeManager  = $objectManager->get('Magento\Store\Model\StoreManagerInterface');
 
@@ -47,7 +46,22 @@ class Nvp extends \Magento\Paypal\Model\Api\Nvp
 
         $currency    = $storeManager->getStore()->getCurrentCurrency()->getCode();
 
-        echo round(((float)$this->_cart->getAmounts() * 10) * $priceHelper->currencyConvert((float)$this->_cart->getAmounts(), 'USD', $currency), 2);
+        $baseCurcy   = $storeManager->getStore()->getBaseCurrency()->getCode();
+
+        return round($price * $priceHelper->currencyConvert((float)$this->_cart->getAmounts(), $baseCurcy, $currency), 2);
+    }
+
+    public function getAmtList($request)
+    {
+        $i = 0;
+        $ret = [];
+        while (array_key_exists("L_AMT{$i}", $request))
+        {
+            $ret[] = "{$i}";
+            $i++;
+        }
+
+        return $ret;
     }
 
     /**
@@ -65,11 +79,12 @@ class Nvp extends \Magento\Paypal\Model\Api\Nvp
         $this->_exportLineItems($request);
 
         $request['ITEMAMT'] = $request['AMT'];
-
-        if (isset($request['L_AMT1'])) 
-            $request['L_AMT0'] = ($request['AMT'] + abs($request['L_AMT1'])) / $request['L_QTY0'];
-        else
-            $request['L_AMT0']  = $request['AMT'] / $request['L_QTY0'];
+        
+        $indexes = $this->getAmtList($request);
+        foreach ($indexes as $i => $index)
+        {
+            $request['L_AMT'.$index] = $this->getPayTotal($request['L_AMT'.$index]);
+        }
 
         // import/suppress shipping address, if any
         $options = $this->getShippingOptions();
@@ -109,10 +124,11 @@ class Nvp extends \Magento\Paypal\Model\Api\Nvp
 
         $request['ITEMAMT'] = $request['AMT'];
         
-        if (isset($request['L_AMT1'])) 
-            $request['L_AMT0'] = ($request['AMT'] + abs($request['L_AMT1'])) / $request['L_QTY0'];
-        else
-            $request['L_AMT0']  = $request['AMT'] / $request['L_QTY0'];
+        $indexes = $this->getAmtList($request);
+        foreach ($indexes as $i => $index)
+        {
+            $request['L_AMT'.$index] = $this->getPayTotal($request['L_AMT'.$index]);
+        }
 
         $response = $this->call(self::DO_EXPRESS_CHECKOUT_PAYMENT, $request);
         $this->_importFromResponse($this->_paymentInformationResponse, $response);
