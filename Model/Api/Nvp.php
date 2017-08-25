@@ -122,13 +122,16 @@ class Nvp extends \Magento\Paypal\Model\Api\Nvp
             $request['ADDROVERRIDE'] = 1;
         }
 
-        $request['ITEMAMT'] = $request['AMT'];
-        
         $indexes = $this->getAmtList($request);
+        $requestAmount = 0;
         foreach ($indexes as $i => $index)
         {
             $request['L_AMT'.$index] = $this->getPayTotal($request['L_AMT'.$index]);
+            $requestAmount += $request['L_AMT'.$index] * $request['L_QTY'.$index];
         }
+
+        $request['AMT']     = $requestAmount;
+        $request['ITEMAMT'] = $requestAmount;
 
         $response = $this->call(self::DO_EXPRESS_CHECKOUT_PAYMENT, $request);
         $this->_importFromResponse($this->_paymentInformationResponse, $response);
