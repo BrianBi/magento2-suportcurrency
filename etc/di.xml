@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../lib/internal/Magento/Framework/ObjectManager/etc/config.xsd">
-	<preference for="Magento\Paypal\Model\Api\AbstractApi" type="Yaoli\Paypals\Model\Api\AbstractApi" />
+	<!-- <preference for="Magento\Paypal\Model\Api\AbstractApi" type="Yaoli\Paypals\Model\Api\AbstractApi" /> -->
     <preference for="Magento\Paypal\Model\Api\Nvp" type="Yaoli\Paypals\Model\Api\Nvp" />
     <preference for="Magento\Paypal\Model\Express\Checkout" type="Yaoli\Paypals\Model\Express\Checkout" />
     <preference for="Magento\Payment\Model\Cart" type="Yaoli\Paypals\Model\Payment\Cart" />
