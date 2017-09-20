@@ -48,12 +48,12 @@ class Nvp extends \Magento\Paypal\Model\Api\Nvp
 
         $baseCurcy   = $storeManager->getStore()->getBaseCurrency()->getCode();
 
-        return round($price * $priceHelper->currencyConvert((float)$this->_cart->getAmounts(), $baseCurcy, $currency), 2);
+        $finalPrice  =  round($price * $priceHelper->currencyConvert((float)$this->_cart->getAmounts(), $baseCurcy, $currency), 2);
 
-        /*if ($currency == 'TWD')
+        if ($currency == 'TWD')
             return intval($finalPrice);
 
-        return $finalPrice;*/
+        return $finalPrice;
     }
 
     public function getAmtList($request)
@@ -83,14 +83,14 @@ class Nvp extends \Magento\Paypal\Model\Api\Nvp
         $request = $this->_exportToRequest($this->_setExpressCheckoutRequest);
         $this->_exportLineItems($request);
 
-        /*$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $storeManager  = $objectManager->get('Magento\Store\Model\StoreManagerInterface');
         $currency      = $storeManager->getStore()->getCurrentCurrency()->getCode();
 
         if ($currency == 'TWD')
         {
             $request['AMT'] = intval($request['AMT']);
-        }*/
+        }
 
         $request['ITEMAMT'] = $request['AMT'];
         
@@ -138,20 +138,26 @@ class Nvp extends \Magento\Paypal\Model\Api\Nvp
 
         $indexes = $this->getAmtList($request);
         $requestAmount = 0;
-        foreach ($indexes as $i => $index)
-        {
-            $request['L_AMT'.$index] = $this->getPayTotal($request['L_AMT'.$index]);
-            $requestAmount += $request['L_AMT'.$index] * $request['L_QTY'.$index];
-        }
-
-        /*$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
         $storeManager  = $objectManager->get('Magento\Store\Model\StoreManagerInterface');
         $currency      = $storeManager->getStore()->getCurrentCurrency()->getCode();
 
-        if ($currency == 'TWD')
-        {
-            $requestAmount = intval($requestAmount);
-        }*/
+        if ($currency == 'TWD') {
+            $requestAmount = intval($this->getPayTotal($request['AMT']));
+
+            foreach ($indexes as $i => $index)
+            {
+                unset($request['L_AMT'.$index]);
+                unset($request['L_QTY'.$index]);
+            }
+        } else {
+            foreach ($indexes as $i => $index)
+            {
+                $request['L_AMT'.$index] = $this->getPayTotal($request['L_AMT'.$index]);
+                $requestAmount += $request['L_AMT'.$index] * $request['L_QTY'.$index];
+            }
+        }
 
         $request['AMT']     = $requestAmount;
         $request['ITEMAMT'] = $requestAmount;

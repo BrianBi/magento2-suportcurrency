@@ -152,7 +152,15 @@ class Checkout extends \Magento\Paypal\Model\Express\Checkout
     private function setShippingOptions(PaypalCart $cart, Address $address = null)
     {
         // for included tax always disable line items (related to paypal amount rounding problem)
-        $this->_api->setIsLineItemsEnabled($this->_config->getValue(PaypalConfig::TRANSFER_CART_LINE_ITEMS));
+        // $this->_api->setIsLineItemsEnabled($this->_config->getValue(PaypalConfig::TRANSFER_CART_LINE_ITEMS));
+
+        $currencyCode = $this->_storeManager->getStore()->getCurrentCurrency()->getCode();
+        if ($currencyCode == 'TWD') 
+        {
+            $this->_api->setIsLineItemsEnabled(0);
+        } else {
+            $this->_api->setIsLineItemsEnabled($this->_config->getValue(PaypalConfig::TRANSFER_CART_LINE_ITEMS));
+        }
 
         // add shipping options if needed and line items are available
         $cartItems = $cart->getAllItems();
