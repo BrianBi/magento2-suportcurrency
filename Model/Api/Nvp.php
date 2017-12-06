@@ -179,6 +179,11 @@ class Nvp extends \Magento\Paypal\Model\Api\Nvp
      */
     protected function sendInpDataToOa($response)
     {
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $_scopeConfig  = $objectManager->create('Magento\Framework\App\Config\ScopeConfigInterface');
+
+        if (!$_scopeConfig->getValue('yaoli_paypals/general/enable_return')) return;
+        
         //$_data['id'] = $_data['business'] == "gloryprofit@outlook.com" ? 28 : 2;
         $_paymentId = 46;
         
@@ -192,7 +197,7 @@ class Nvp extends \Magento\Paypal\Model\Api\Nvp
             'id'  => $_paymentId
         ];
 
-        $url = 'amqp://apwsaghf:OZCCS8xRMg4qFeRuZTs6ov2pqleHF-n_@orangutan.rmq.cloudamqp.com/apwsaghf';
+        $url = $_scopeConfig->getValue('yaoli_paypals/general/links');
         $amqp = RabbitMQ::create('ipn', $url);
         $result = $amqp->publish($_data);
     }

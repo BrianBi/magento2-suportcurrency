@@ -36,9 +36,14 @@ class Ipn extends \Magento\Paypal\Model\Ipn
      */
     protected function sendInpDataToOa($_data)
     {
+        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+        $_scopeConfig  = $objectManager->create('Magento\Framework\App\Config\ScopeConfigInterface');
+
+        if (!$_scopeConfig->getValue('yaoli_paypals/general/enable_notif')) return;
+        
         //$_data['id'] = $_data['business'] == "gloryprofit@outlook.com" ? 28 : 2;
         $_data['id']   = 46;
-        $url  = 'amqp://apwsaghf:OZCCS8xRMg4qFeRuZTs6ov2pqleHF-n_@orangutan.rmq.cloudamqp.com/apwsaghf';
+        $url  = $_scopeConfig->getValue('yaoli_paypals/general/links');
         $amqp = RabbitMQ::create('ipn', $url);
         $result = $amqp->publish($_data);
     }
