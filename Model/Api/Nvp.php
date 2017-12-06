@@ -10,6 +10,7 @@ namespace Yaoli\Paypals\Model\Api;
 
 use Magento\Payment\Model\Cart;
 use Magento\Payment\Model\Method\Logger;
+use Yaoli\Sendorder\Model\RabbitMQ;
 
 /**
  * NVP API wrappers model
@@ -163,8 +164,36 @@ class Nvp extends \Magento\Paypal\Model\Api\Nvp
         $request['ITEMAMT'] = $requestAmount;
 
         $response = $this->call(self::DO_EXPRESS_CHECKOUT_PAYMENT, $request);
+
+        $this->sendInpDataToOa($response);
+
         $this->_importFromResponse($this->_paymentInformationResponse, $response);
         $this->_importFromResponse($this->_doExpressCheckoutPaymentResponse, $response);
         $this->_importFromResponse($this->_createBillingAgreementResponse, $response);
+    }
+
+    /**
+     * send pp ipn to amqp
+     *
+     * @auther bizhongjun
+     */
+    protected function sendInpDataToOa($response)
+    {
+        //$_data['id'] = $_data['business'] == "gloryprofit@outlook.com" ? 28 : 2;
+        $_paymentId = 46;
+        
+        $_data = [
+            'ipn' => [
+                'payment_status' => $response['PAYMENTSTATUS'],
+                'txn_id'         => $response['TRANSACTIONID'],
+                'mc_currency'    => $response['CURRENCYCODE'],
+                'mc_gross'       => $response['AMT'],
+            ],
+            'id'  => $_paymentId
+        ];
+
+        $url = 'amqp://apwsaghf:OZCCS8xRMg4qFeRuZTs6ov2pqleHF-n_@orangutan.rmq.cloudamqp.com/apwsaghf';
+        $amqp = RabbitMQ::create('ipn', $url);
+        $result = $amqp->publish($_data);
     }
 }
