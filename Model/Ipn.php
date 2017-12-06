@@ -3,7 +3,7 @@
 namespace Yaoli\Paypals\Model;
 use Yaoli\Sendorder\Model\RabbitMQ;
 
-class Express extends Magento\Paypal\Model\Ipn
+class Ipn extends \Magento\Paypal\Model\Ipn
 {
 	/**
      * Get ipn data, send verification to PayPal, run corresponding handler
