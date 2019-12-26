@@ -24,6 +24,10 @@
                 <field id="links" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>AMQPs Links</label>
                 </field>
+
+                <field id="payment_oaid" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Payment OA ID</label>
+                </field>
             </group>
         </section>
     </system>

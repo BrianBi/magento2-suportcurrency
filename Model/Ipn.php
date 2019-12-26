@@ -42,7 +42,7 @@ class Ipn extends \Magento\Paypal\Model\Ipn
         if (!$_scopeConfig->getValue('yaoli_paypals/general/enable_notif')) return;
         
         //$_data['id'] = $_data['business'] == "gloryprofit@outlook.com" ? 28 : 2;
-        $_data['id']   = 46;
+        $_data['id']   = $_scopeConfig->getValue('yaoli_paypals/general/payment_oaid');
         $url  = $_scopeConfig->getValue('yaoli_paypals/general/links');
         $amqp = RabbitMQ::create('ipn', $url);
         $result = $amqp->publish($_data);
